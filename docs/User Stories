@@ -1,0 +1,508 @@
+STUDENT PROJECT CATALOG PORTAL
+
+USER STORIES AND ACCEPTANCE CRITERIA
+
+1. USER STORIES OVERVIEW
+
+Format: As a [role], I want [goal], so that [benefit].
+
+Students act in two modes:
+
+1. Seeker: Browses and requests projects.
+2. Contributor: Posts their own projects.
+
+Acceptance criteria (AC) are provided for key user stories.
+
+2. STUDENT STORIES
+
+All stories below begin with "As a student" unless the role is stated.
+
+EPIC 1: ACCOUNT AND AUTHENTICATION
+
+S1 - User Registration
+
+User Story:
+As a visitor, I want to register with name, email and password, so that I can request or post projects.
+
+Acceptance Criteria:
+- Email must be unique.
+- Password must be hashed.
+- New accounts must receive the Student role.
+
+S2 - User Login
+
+User Story:
+I want to log in, so that I can access my dashboard.
+
+Acceptance Criteria:
+- Wrong credentials must show a clear error.
+- Repeated login failures must be rate-limited.
+
+S3 - User Logout
+
+User Story:
+I want to log out, so that my account stays safe on shared computers.
+
+S4 - Password Reset
+
+User Story:
+I want to reset a forgotten password by email, so that I am never locked out.
+
+Acceptance Criteria:
+- Reset link must expire quickly.
+- Reset link must work only once.
+
+S5 - Protected Pages
+
+User Story:
+I want protected pages to redirect me to login when signed out, so that my data stays private.
+
+EPIC 2: BROWSING AND DISCOVERY
+
+S6 - Project Catalog Display
+
+User Story:
+As a visitor, I want a grid of cards showing image, title, course, technology, level, rating and an Official/Community badge, so that I can scan options and judge trust at a glance.
+
+S7 - Keyword Search
+
+User Story:
+I want to search by keyword, so that I can find projects by name or topic.
+
+S8 - Project Filtering
+
+User Story:
+I want to filter by course, technology, level and source, so that I see only relevant projects.
+
+Acceptance Criteria:
+- Filters must be combinable.
+
+S9 - Project Sorting
+
+User Story:
+I want to sort by newest, top rated or title, so that I can prioritize.
+
+S10 - Pagination and URL Filters
+
+User Story:
+I want paginated results with filters kept in the URL, so that browsing is fast and shareable.
+
+Acceptance Criteria:
+- List endpoints must respond in under 500 ms.
+
+S11 - Project Detail Page
+
+User Story:
+I want a detail page with description, screenshots, tech stack, what is included and how to run, so that I can decide before requesting.
+
+S12 - Community Project Author Details
+
+User Story:
+I want to see the author's name and profile on community projects, so that I know who built it.
+
+S13 - Project Reviews
+
+User Story:
+I want to read reviews from other students, so that I can judge quality.
+
+S14 - Empty States
+
+User Story:
+I want friendly empty states when nothing matches, so that I know what to try next.
+
+EPIC 3: REQUESTING AND DOWNLOADING
+
+S15 - Request a Project
+
+User Story:
+I want to send a request with a short note, so that the approver has context.
+
+Acceptance Criteria:
+- Only logged-in students can request projects.
+- No duplicate active request is allowed for the same project.
+- Students cannot request their own projects.
+
+S16 - Track Request Status
+
+User Story:
+I want to see request status (Pending, Approved, Rejected, Delivered), so that I know where it stands.
+
+S17 - Request Status Email Notifications
+
+User Story:
+I want an email on every status change, so that I do not have to keep checking.
+
+S18 - View Rejection Reason
+
+User Story:
+I want to read the rejection reason, so that I understand the decision.
+
+S19 - Approval-Based Download Access
+
+User Story:
+I want a download button that appears only after approval, so that I get files only when entitled.
+
+Acceptance Criteria:
+- Download button must remain hidden before approval.
+- Downloads must be blocked by the API before approval.
+- Download links must expire shortly.
+- A fresh link can be generated from the dashboard.
+
+S20 - One-Click ZIP Download
+
+User Story:
+I want one-click ZIP download, so that I can start right away.
+
+EPIC 4: CONTRIBUTING PROJECTS
+
+S21 - Accept Project Posting Rules
+
+User Story:
+I want to read the posting rules and accept a terms agreement before submitting, so that I understand my responsibilities.
+
+Acceptance Criteria:
+- The student must confirm that the work is their own or they have the right to share it.
+
+S22 - Submit a Community Project
+
+User Story:
+I want a "Submit a project" form (title, course, tech stack, level, description, how-to-run, screenshots, ZIP), so that my project is complete.
+
+Acceptance Criteria:
+- Incomplete submissions cannot be sent.
+- Only allowed file types and sizes are accepted.
+
+S23 - Save Submission as Draft
+
+User Story:
+I want to save a submission as a draft, so that I can finish it later.
+
+S24 - Track Submission Status
+
+User Story:
+I want to see my submission status (Draft, Pending Review, Approved, Rejected, Changes Requested), so that I know what is next.
+
+S25 - View Admin Feedback
+
+User Story:
+I want to read admin feedback when my submission is rejected or needs changes, so that I can fix and resubmit.
+
+S26 - Submission Status Email Notifications
+
+User Story:
+I want an email when my submission's status changes, so that I am informed immediately.
+
+S27 - Edit Published Project
+
+User Story:
+I want to edit my published project, so that I can improve or fix it.
+
+Acceptance Criteria:
+- Significant edits must send the project back for re-review.
+
+S28 - Withdraw or Delete Own Project
+
+User Story:
+I want to withdraw or delete my own project, so that I control my work.
+
+Acceptance Criteria:
+- Past requests and downloads must not be broken.
+
+S29 - Public Author Profile
+
+User Story:
+I want a public author profile listing my published projects and average rating, so that I get recognition.
+
+S30 - View Project Requests and Downloads
+
+User Story:
+I want to see requests and downloads my projects received, so that I know they are useful.
+
+EPIC 5: DASHBOARD AND PROFILE
+
+S31 - My Requests
+
+User Story:
+I want "My Requests", so that I can track everything in one place.
+
+S32 - My Downloads
+
+User Story:
+I want "My Downloads", so that I can find projects I received.
+
+S33 - My Submissions
+
+User Story:
+I want "My Submissions", so that I can manage what I posted.
+
+S34 - Edit Profile and Change Password
+
+User Story:
+I want to edit my profile and change my password, so that my account stays current and secure.
+
+EPIC 6: REVIEWS AND REPORTING
+
+S35 - Rate and Review a Project
+
+User Story:
+I want to rate (1 to 5) and review a project after downloading it, so that I help others choose.
+
+Acceptance Criteria:
+- Only students who downloaded the project can review it.
+- One review per project per student.
+- Students cannot review their own projects.
+
+S36 - Edit or Delete Own Review
+
+User Story:
+I want to edit or delete my own review, so that I can correct mistakes.
+
+S37 - Report Inappropriate Content
+
+User Story:
+I want to report a project or review that breaks the rules, so that quality stays high.
+
+STUDENT STRETCH STORIES
+
+S38 - Wishlist
+
+User Story:
+I want a wishlist to save projects for later.
+
+S39 - Request Chat
+
+User Story:
+I want a chat thread on a request to ask questions without email.
+
+3. ADMIN STORIES
+
+All stories below begin with "As an admin".
+
+EPIC 7: ACCESS AND SECURITY
+
+A1 - Role-Protected Admin Panel
+
+User Story:
+I want a role-protected admin panel, so that only authorized people manage the system.
+
+Acceptance Criteria:
+- A student calling an admin endpoint must receive HTTP 403 Forbidden.
+
+A2 - Secure Token-Based Sessions
+
+User Story:
+I want secure token-based sessions, so that my powerful account is harder to hijack.
+
+EPIC 8: OFFICIAL CATALOG MANAGEMENT
+
+A3 - Create Official Projects
+
+User Story:
+I want to create official projects with full details, screenshots and ZIP, so that the catalog has a trusted baseline.
+
+Acceptance Criteria:
+- Official projects must be published immediately with the Official badge.
+
+A4 - Edit Official Projects
+
+User Story:
+I want to edit official projects, so that I can fix errors or update files.
+
+A5 - Delete or Deactivate Projects
+
+User Story:
+I want to delete or deactivate any project (isActive), so that outdated or problematic ones disappear without breaking past requests.
+
+A6 - Searchable and Filterable Project Management
+
+User Story:
+I want a searchable, filterable list of all projects (any source or status), so that I can manage a large catalog.
+
+A7 - Enforce Upload Restrictions
+
+User Story:
+I want upload type and size limits enforced, so that bad files never enter storage.
+
+EPIC 9: COMMUNITY SUBMISSION REVIEW
+
+A8 - Pending Submission Review Queue
+
+User Story:
+I want a review queue of pending student submissions, so that nothing goes live unchecked.
+
+A9 - Preview Community Submissions
+
+User Story:
+I want to preview a submission's details, screenshots and ZIP, so that I can check it against the rules.
+
+A10 - Approve Community Submissions
+
+User Story:
+I want to approve a submission, so that it goes live with the Community badge.
+
+Acceptance Criteria:
+- The author must receive an email.
+- The project must appear in the catalog.
+
+A11 - Reject Community Submissions
+
+User Story:
+I want to reject a submission with a required reason, so that the student understands.
+
+Acceptance Criteria:
+- Rejection must be blocked if the reason is empty.
+
+A12 - Request Changes to Submissions
+
+User Story:
+I want to request changes with specific notes, so that the student can improve and resubmit.
+
+A13 - Unpublish Community Projects
+
+User Story:
+I want to unpublish any community project later, so that I can act on problems found after approval.
+
+A14 - Handle Student Reports
+
+User Story:
+I want to handle student reports on projects and reviews, so that rule-breaking content is removed.
+
+A15 - Warn or Ban Students
+
+User Story:
+I want to warn or ban a student from posting after repeated violations, so that the community stays healthy.
+
+EPIC 10: REQUEST REVIEW
+
+A16 - View All Project Requests
+
+User Story:
+I want to see all requests with student, project, note, status and date, so that I can review efficiently.
+
+A17 - Filter Project Requests
+
+User Story:
+I want to filter requests by status and project source, so that I can focus on what needs action.
+
+A18 - Approve Project Requests
+
+User Story:
+I want to approve a request, so that the student can download.
+
+Acceptance Criteria:
+- Request status must change.
+- An email must be sent.
+- Download access must be unlocked.
+
+A19 - Reject Project Requests
+
+User Story:
+I want to reject a request with a required reason, so that the student understands.
+
+Acceptance Criteria:
+- An email containing the rejection reason must be sent.
+
+A20 - Mark Requests as Delivered
+
+User Story:
+I want requests marked Delivered after download, so that I can tell fulfilled from open ones.
+
+EPIC 11: USERS AND INSIGHTS
+
+A21 - User Management
+
+User Story:
+I want a user list with role, join date and posting status, so that I can see who uses the portal.
+
+A22 - Platform Statistics
+
+User Story:
+I want a stats page (projects official vs community, submissions by status, requests by status, top courses and contributors), so that I can see demand and activity.
+
+A23 - Moderate Reviews
+
+User Story:
+I want to moderate reviews, so that ratings stay trustworthy.
+
+ADMIN STRETCH STORIES
+
+A24 - CSV Export
+
+User Story:
+I want CSV export of requests and submissions.
+
+A25 - Request Chat Replies
+
+User Story:
+I want to reply in request chat threads.
+
+A26 - Delegate Request Approval
+
+User Story:
+I want to delegate request approval for a community project to its author.
+
+4. SYSTEM AND QUALITY STORIES
+
+Q1 - Performance
+
+Requirement:
+List endpoints respond in under 500 ms.
+
+Q2 - Authentication and Input Security
+
+Requirement:
+Login attempts are rate-limited and all inputs sanitized.
+
+Q3 - File Upload Security
+
+Requirement:
+Uploads are restricted by type and size, and checked where possible.
+
+Q4 - Download Security
+
+Requirement:
+Download links expire after a short time.
+
+Q5 - Role and Ownership Authorization
+
+Requirement:
+Role and ownership checks are enforced in the API (for example, a student can edit only their own project).
+
+Q6 - Public Project Visibility
+
+Requirement:
+Only approved, active projects appear in public listings.
+
+Q7 - Automated Testing
+
+Requirement:
+Jest and Supertest API tests plus one Playwright end-to-end test cover the full flow: submit, review, request, approve, download.
+
+5. PRIORITY CLASSIFICATION
+
+MUST-HAVE REQUIREMENTS
+
+- Student stories: S1 to S37.
+- Admin stories: A1 to A23.
+- System and quality requirements: Q1 to Q7.
+
+STRETCH (BONUS) REQUIREMENTS
+
+- S38: Wishlist.
+- S39: Request chat.
+- A24: CSV export of requests and submissions.
+- A25: Reply in request chat threads.
+- A26: Delegate request approval for a community project to its author.
+
+6. FEATURES THAT CAN BE DEFERRED
+
+If the project scope becomes too large for 12 weeks, the safest items to defer are:
+
+- S29: Author profile.
+- S30: Project request and download statistics for authors.
+- A15: Ban system.
+- S37: Reporting projects or reviews.
+- A14: Admin handling of reports.
+
+END OF USER STORIES DOCUMENT
+
