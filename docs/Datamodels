@@ -1,0 +1,557 @@
+STUDENT PROJECT CATALOG PORTAL
+
+DATA MODELS AND DATABASE STRUCTURE
+
+4. DATA MODELS
+
+The database is a set of collections, where each document describes one real-world thing.
+
+The portal has five core collections and two stretch collections.
+
+4.1 COLLECTION OVERVIEW
+
+1. User
+   What it stores: Students and admins.
+   Related stories: S1-S5, S29, S34, A1, A21.
+
+2. Project
+   What it stores: Official and community projects.
+   Related stories: S6-S14, S21-S28, A3-A13.
+
+3. Request
+   What it stores: A student's ask for a project and its status.
+   Related stories: S15-S20, A16-A20.
+
+4. Review
+   What it stores: Rating and comment after download.
+   Related stories: S35-S36, A23.
+
+5. Report
+   What it stores: Flag for rule-breaking content.
+   Related stories: S37, A14.
+
+6. Wishlist (Stretch)
+   What it stores: Saved projects.
+   Related stories: S38.
+
+7. Message (Stretch)
+   What it stores: Request chat.
+   Related stories: S39, A25.
+
+
+4.2 RELATIONSHIPS
+
+The database relationships are as follows:
+
+1. A User creates many Projects.
+2. A User makes many Requests, and a Project receives many Requests.
+3. A User writes many Reviews, and a Project has many Reviews.
+4. A User files many Reports.
+
+
+4.3 USER COLLECTION
+
+The User collection stores student and administrator account information.
+
+Fields:
+
+1. name
+   Type: String
+   Required: Yes
+   Meaning: Display name.
+
+2. email
+   Type: String
+   Required: Yes, Unique
+   Meaning: Login ID, stored lowercase.
+
+3. passwordHash
+   Type: String
+   Required: Yes
+   Meaning: bcrypt hash, never the real password.
+
+4. role
+   Type: student / admin
+   Required: Yes (Default: student)
+   Meaning: Controls permissions.
+
+5. bio
+   Type: String
+   Required: No
+   Meaning: Short intro for author profile.
+
+6. avatarUrl
+   Type: String
+   Required: No
+   Meaning: Profile picture.
+
+7. postingStatus
+   Type: active / warned / banned
+   Required: Yes (Default: active)
+   Meaning: Whether the user can post projects.
+
+8. warningCount
+   Type: Number
+   Required: Yes (Default: 0)
+   Meaning: Rule violations so far.
+
+9. resetTokenHash
+   Type: String
+   Required: No
+   Meaning: Hashed forgot-password token.
+
+10. resetTokenExpires
+    Type: Date
+    Required: No
+    Meaning: Token expiry time.
+
+11. createdAt, updatedAt
+    Type: Date
+    Required: Auto
+    Meaning: Join date for the admin user list.
+
+USER COLLECTION RULES
+
+1. Never return passwordHash or reset fields in API responses.
+2. A banned user can still browse and request but cannot submit projects.
+
+
+4.4 PROJECT COLLECTION
+
+One model holds both official and community projects, separated by source.
+
+BASIC DETAILS
+
+1. title
+   Type: String
+   Required: Yes
+   Meaning: Project name.
+
+2. slug
+   Type: String
+   Required: Yes, Unique
+   Meaning: URL-friendly name.
+
+3. course
+   Type: String
+   Required: Yes
+   Meaning: Example: CSE, IT, MCA.
+
+4. techStack
+   Type: [String]
+   Required: Yes
+   Meaning: Example: React, Node, MongoDB.
+
+5. level
+   Type: beginner / intermediate / advanced
+   Required: Yes
+   Meaning: Difficulty.
+
+6. description
+   Type: String
+   Required: Yes
+   Meaning: What the project does.
+
+7. whatInclude
+   Type: String
+   Required: Yes
+   Meaning: Example: source code, report, DB script.
+
+8. howToRun
+   Type: String
+   Required: Yes
+   Meaning: Setup steps.
+
+
+FILES
+
+9. images
+   Type: [{ url, publicId }]
+   Required: Yes (Minimum 1)
+   Meaning: Screenshots.
+
+10. file
+    Type: { publicId, sizeBytes, originalName }
+    Required: Yes
+    Meaning: The ZIP. Stores the private storage ID, not a public link, so downloads can be gated and expire.
+
+
+OWNERSHIP AND SOURCE
+
+11. source
+    Type: official / community
+    Required: Yes
+    Meaning: Drives the badge.
+
+12. createdBy
+    Type: ObjectId → User
+    Required: Yes
+    Meaning: Who posted it.
+
+13. termsAcceptedAt
+    Type: Date
+    Required: Community only
+    Meaning: Proof the author accepted the rules.
+
+
+REVIEW WORKFLOW
+
+14. submissionStatus
+    Type: draft / pending_review / changes_requested / approved / rejected
+    Required: Yes
+    Meaning: Position in the approval flow.
+
+15. reviewNote
+    Type: String
+    Required: On reject or changes
+    Meaning: Admin feedback.
+
+16. reviewedBy
+    Type: ObjectId → User
+    Required: No
+    Meaning: Deciding admin.
+
+17. reviewedAt
+    Type: Date
+    Required: No
+    Meaning: Decision time.
+
+18. isActive
+    Type: Boolean (Default: true)
+    Required: Yes
+    Meaning: Soft delete or unpublish.
+
+
+STATISTICS (MAINTAINED BY THE SERVER)
+
+19. ratingAvg
+    Type: Number (0-5)
+    Meaning: Shown on the card.
+
+20. ratingCount
+    Type: Number
+    Meaning: Number of reviews.
+
+21. requestCount
+    Type: Number
+    Meaning: Shown to the author.
+
+22. downloadCount
+    Type: Number
+    Meaning: Shown to the author.
+
+23. createdAt, updatedAt
+    Type: Date
+    Meaning: Used for the "newest" sort.
+
+
+PROJECT STATUS FLOW
+
+Community status flow:
+
+draft → pending_review → approved (live)
+
+Other possible transitions:
+
+pending_review → changes_requested
+
+changes_requested → pending_review (after student edits and resubmits)
+
+pending_review → rejected
+
+Official projects created by an admin skip this workflow and start as approved.
+
+
+PROJECT COLLECTION RULES
+
+1. Publicly visible only if submissionStatus = approved and isActive = true.
+
+2. Editing a live community project's content sets it back to pending_review.
+
+3. Deleting means setting isActive = false. Documents are never removed, so past requests keep working.
+
+4. A student can edit only projects where createdBy is their own ID.
+
+
+4.5 REQUEST COLLECTION
+
+The Request collection stores a student's project request and its approval status.
+
+FIELDS
+
+1. userId
+   Type: ObjectId → User
+   Required: Yes
+   Meaning: Who is asking.
+
+2. projectId
+   Type: ObjectId → Project
+   Required: Yes
+   Meaning: What they want.
+
+3. note
+   Type: String (Maximum about 300 characters)
+   Required: Yes
+   Meaning: Why they need it.
+
+4. status
+   Type: pending / approved / rejected / delivered
+   Required: Yes (Default: pending)
+   Meaning: Current state.
+
+5. adminReason
+   Type: String
+   Required: If rejected
+   Meaning: Why it was rejected.
+
+6. decidedBy
+   Type: ObjectId → User
+   Required: No
+   Meaning: Admin (or author, if delegated).
+
+7. decidedAt
+   Type: Date
+   Required: No
+   Meaning: Decision time.
+
+8. deliveredAt
+   Type: Date
+   Required: No
+   Meaning: First successful download.
+
+9. downloadCount
+   Type: Number (Default: 0)
+   Required: Yes
+   Meaning: Times downloaded.
+
+10. createdAt, updatedAt
+    Type: Date
+    Required: Auto
+    Meaning: Request date.
+
+
+REQUEST STATUS FLOW
+
+pending → approved → delivered
+
+Or:
+
+pending → rejected
+
+
+REQUEST COLLECTION RULES
+
+1. No duplicates: A user cannot hold two active (pending or approved) requests for the same project.
+
+2. No self-requests: userId cannot equal the project's createdBy.
+
+3. Download gate: The API allows download only when status is approved or delivered, and generates a short-lived link each time. The link itself is never stored.
+
+4. Every status change triggers an email.
+
+
+4.6 REVIEW COLLECTION
+
+The Review collection stores project ratings and comments submitted by students after downloading a project.
+
+FIELDS
+
+1. userId
+   Type: ObjectId → User
+   Required: Yes
+   Meaning: Reviewer.
+
+2. projectId
+   Type: ObjectId → Project
+   Required: Yes
+   Meaning: Reviewed project.
+
+3. rating
+   Type: Number (1-5)
+   Required: Yes
+   Meaning: Stars.
+
+4. comment
+   Type: String
+   Required: No
+   Meaning: Written feedback.
+
+5. isHidden
+   Type: Boolean (Default: false)
+   Required: Yes
+   Meaning: Admin moderation.
+
+6. createdAt, updatedAt
+   Type: Date
+   Required: Auto
+
+
+REVIEW COLLECTION RULES
+
+1. One review per user per project (unique on userId + projectId).
+
+2. A review is allowed only if the user has a delivered request for the project and is not its author.
+
+3. After any create, edit, delete or hide operation, recalculate the project's ratingAvg and ratingCount.
+
+
+4.7 REPORT COLLECTION
+
+The Report collection stores flags submitted for rule-breaking content.
+
+FIELDS
+
+1. reporterId
+   Type: ObjectId → User
+   Required: Yes
+   Meaning: Who reported.
+
+2. targetType
+   Type: project / review
+   Required: Yes
+   Meaning: What is reported.
+
+3. targetId
+   Type: ObjectId
+   Required: Yes
+   Meaning: ID of the project or review.
+
+4. reason
+   Type: plagiarism / malware / inappropriate / personal_data / other
+   Required: Yes
+   Meaning: Category.
+
+5. details
+   Type: String
+   Required: No
+   Meaning: Extra explanation.
+
+6. status
+   Type: open / resolved / dismissed
+   Required: Yes (Default: open)
+   Meaning: Admin handling.
+
+7. resolvedBy
+   Type: ObjectId → User
+   Required: No
+   Meaning: Handling admin.
+
+8. resolutionNote
+   Type: String
+   Required: No
+   Meaning: Action taken.
+
+9. createdAt
+   Type: Date
+   Required: Auto
+
+
+4.8 STRETCH MODELS
+
+WISHLIST
+
+Fields:
+
+1. userId → User
+2. projectId → Project
+3. createdAt
+
+Constraint:
+
+Unique on userId + projectId.
+
+
+MESSAGE
+
+Fields:
+
+1. requestId → Request
+2. senderId → User
+3. text
+4. createdAt
+
+
+4.9 DATABASE INDEXES
+
+The following indexes are defined to improve query performance and enforce uniqueness.
+
+1. User Collection
+
+   Index: email (unique)
+   Purpose: Fast, unique login.
+
+2. Project Collection
+
+   Index: slug (unique)
+   Purpose: Detail page by URL.
+
+3. Project Collection
+
+   Index: submissionStatus + isActive + source
+   Purpose: Public listing and filters.
+
+4. Project Collection
+
+   Index: Text index on title, description, techStack.
+   Purpose: Keyword search.
+
+5. Project Collection
+
+   Index: createdBy
+   Purpose: My submissions and author profile.
+
+6. Request Collection
+
+   Index: userId + projectId
+   Purpose: Duplicate check and My Requests.
+
+7. Request Collection
+
+   Index: status
+   Purpose: Admin status filter.
+
+8. Review Collection
+
+   Index: userId + projectId (unique)
+   Purpose: One review per project.
+
+9. Review Collection
+
+   Index: projectId
+   Purpose: Reviews on the detail page.
+
+
+4.10 PERMISSION SUMMARY
+
+Action: Create official project
+Student: No
+Admin: Yes (auto-approved)
+
+Action: Create community project
+Student: Yes (needs review)
+Admin: Yes
+
+Action: Edit a project
+Student: Only their own
+Admin: Any
+
+Action: Approve or reject submissions
+Student: No
+Admin: Yes
+
+Action: Request a project
+Student: Yes (not their own)
+Admin: Not applicable
+
+Action: Approve or reject requests
+Student: No (optional delegation)
+Admin: Yes
+
+Action: Review a project
+Student: Only after download
+Admin: Moderate only
+
+
+END OF DATA MODELS DOCUMENT
+
+Source: Student Project Catalog Portal - Original Requirements Document.
