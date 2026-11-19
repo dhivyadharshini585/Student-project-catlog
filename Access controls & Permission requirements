@@ -1,0 +1,396 @@
+Student Project Catalog Portal
+Access Control & Permission Requirements
+
+1. Overview
+
+The Student Project Catalog Portal implements role-based access control to ensure that students and administrators can access only the features and operations permitted for their roles.
+
+The system has two primary roles:
+
+- Student: Can browse projects, request projects, download approved projects, submit community projects, manage their own submissions, and review downloaded projects.
+- Admin: Has overall system management privileges, including official project management, community submission reviews, request approvals, user management, and content moderation.
+
+All role-based and ownership-based authorization checks must be enforced at the API level.
+
+
+
+2. User Roles
+
+2.1 Student
+
+- Default role assigned when a new user registers.
+- Can browse official and approved community projects.
+- Can search, filter, and sort projects.
+- Can request projects created by other users.
+- Can download projects after request approval.
+- Can submit their own community projects.
+- Can manage their own project submissions.
+- Can view their requests, downloads, and submissions.
+- Can rate and review projects after downloading them.
+- Can report projects or reviews that violate platform rules.
+- Cannot access administrator-only functionalities.
+
+2.2 Admin
+
+- Has access to the protected administrator panel.
+- Can create and publish official projects.
+- Can create community projects.
+- Can edit any project.
+- Can delete or deactivate projects.
+- Can review and approve community submissions.
+- Can reject submissions with a mandatory reason.
+- Can request changes to community submissions.
+- Can unpublish approved community projects.
+- Can manage student project requests.
+- Can approve or reject project requests.
+- Can manage users and their posting status.
+- Can warn or ban students from posting after repeated violations.
+- Can handle reports submitted by students.
+- Can moderate project reviews.
+- Can access project statistics and platform insights.
+
+
+
+3. Authentication and Access Security
+
+3.1 User Registration
+
+- Visitors can register using their name, email, and password.
+- Email addresses must be unique.
+- Passwords must be hashed before storage.
+- Every newly registered account must receive the Student role by default.
+
+3.2 User Login
+
+- Users must authenticate before accessing protected features.
+- Incorrect credentials must display a clear error message.
+- Repeated login failures must be rate-limited.
+- The system must use secure token-based sessions.
+
+3.3 User Logout
+
+- Users must be able to log out securely.
+- Logout must protect accounts when users access the application from shared computers.
+
+3.4 Password Reset
+
+- Users must be able to reset forgotten passwords through email.
+- Password reset links must expire quickly.
+- Each reset link must work only once.
+- Reset tokens must be stored as hashes.
+
+3.5 Protected Pages
+
+- Unauthenticated users attempting to access protected pages must be redirected to the login page.
+- Private user information must not be accessible to unauthorized users.
+- The admin panel must be protected using role-based authorization.
+
+3.6 API Security
+
+- Role and ownership checks must be enforced at the API level.
+- Students attempting to access administrator-only endpoints must receive HTTP 403 Forbidden.
+- All inputs must be sanitized.
+- Password hashes and password-reset fields must never be returned in API responses.
+
+
+
+4. Project Access Permissions
+
+4.1 Official Projects
+
+- Only administrators can create official projects.
+- Official projects must be published immediately with the Official badge.
+- Administrators can edit official projects.
+- Administrators can delete or deactivate any project.
+- Students can browse and request official projects.
+
+4.2 Community Projects
+
+- Students can submit their own projects as community projects.
+- Administrators can also create community projects.
+- Students must confirm that the submitted work belongs to them or that they have the right to share it.
+- Students must accept the terms agreement before submission.
+- Community submissions must initially enter the Pending Review status.
+- Only approved community projects can become publicly available.
+- Administrators can approve, reject, or request changes to submissions.
+- Administrators can unpublish community projects after approval.
+
+4.3 Project Ownership
+
+- Students can edit only projects where the `createdBy` field matches their own user ID.
+- Administrators can edit any project.
+- Students can withdraw or delete only their own projects.
+- Administrators can deactivate any project.
+- Deleting a project must use soft deletion by setting `isActive = false`.
+- Project documents must not be physically removed because existing requests and downloads must remain valid.
+- Editing a published community project must return it to Pending Review for re-approval.
+
+4.4 Public Project Visibility
+
+A project must be publicly visible only when both conditions are satisfied:
+
+- submissionStatus = approved
+- isActive = true
+
+Projects that are pending review, rejected, inactive, or awaiting changes must not appear in public project listings.
+
+
+
+5. Project Request Permissions
+
+5.1 Student Permissions
+
+- Only logged-in students can request projects.
+- Students can request projects created by other users.
+- Students cannot request their own projects.
+- Students cannot create duplicate active requests for the same project.
+- Active requests include Pending and Approved requests.
+- Students can view their own request statuses.
+- Students can view rejection reasons.
+- Students can download projects only after approval.
+
+5.2 Admin Permissions
+
+- Administrators can view all project requests.
+- Administrators can view the student, project, request note, status, and request date.
+- Administrators can filter requests by status and project source.
+- Administrators can approve project requests.
+- Administrators can reject project requests with a mandatory reason.
+- Administrators can review and manage request statuses.
+- Requests must be marked as Delivered after a successful download.
+
+5.3 Request Status Flow
+
+- Pending → Approved → Delivered
+- Pending → Rejected
+
+Every request status change must trigger an email notification.
+
+5.4 Request Approval Delegation
+
+As an optional stretch feature, administrators may delegate request approval for a community project to its author.
+
+The decidedBy field can identify the administrator or delegated project author who made the decision.
+
+
+
+6. Download Access Permissions
+
+- Project downloads must be restricted to authorized students.
+- A student must have an Approved or Delivered request to download a project.
+- Downloads must remain blocked before approval.
+- The API must enforce download authorization.
+- Download links must expire after a short time.
+- A fresh download link must be generated whenever required.
+- Download links must never be stored as permanent public links.
+- The system must store the private storage ID of the ZIP file.
+- The first successful download must update the request to Delivered.
+- Download counts must be maintained.
+
+
+
+7. Community Submission Review Permissions
+
+Student Permissions
+
+- Students can submit their own projects.
+- Students can save submissions as drafts.
+- Students can view their submission status.
+- Students can read administrator feedback.
+- Students can edit their own submissions.
+- Students can resubmit projects after making requested changes.
+- Students can withdraw or delete their own projects.
+
+Admin Permissions
+
+- Administrators can view the pending submission review queue.
+- Administrators can preview submission details, screenshots, and ZIP files.
+- Administrators can approve submissions.
+- Administrators can reject submissions only when a rejection reason is provided.
+- Administrators can request changes with specific feedback.
+- Administrators can unpublish community projects.
+- Administrators can moderate submissions that violate platform rules.
+
+Submission Status Flow
+
+Draft → Pending Review → Approved
+
+Other possible transitions:
+
+- Pending Review → Rejected
+- Pending Review → Changes Requested
+- Changes Requested → Pending Review (after student edits and resubmits)
+
+Only approved submissions become publicly available.
+
+
+
+8. Review and Rating Permissions
+
+Student Permissions
+
+- Students can review a project only after successfully downloading it.
+- Students cannot review their own projects.
+- Each student can submit only one review per project.
+- Students can edit or delete their own reviews.
+- Ratings must be between 1 and 5.
+- Students can report inappropriate or rule-breaking reviews.
+
+Admin Permissions
+
+- Administrators can moderate project reviews.
+- Administrators can hide inappropriate reviews.
+- Administrators can manage reported reviews.
+
+Review Authorization Rules
+
+- A user must have a Delivered request for the project before submitting a review.
+- The reviewer must not be the project's author.
+- A unique constraint must exist on `userId + projectId`.
+- Project rating statistics must be recalculated after review creation, editing, deletion, or hiding.
+
+
+
+9. Reporting and Moderation Permissions
+
+Student Permissions
+
+Students can report:
+
+- Projects containing plagiarized code.
+- Projects containing malware.
+- Inappropriate projects or reviews.
+- Content containing personal data.
+- Other content that violates platform rules.
+
+Admin Permissions
+
+Administrators can:
+
+- View and handle student reports.
+- Resolve or dismiss reports.
+- Moderate reported projects and reviews.
+- Warn students after repeated violations.
+- Ban students from posting after repeated violations.
+
+Posting Restrictions
+
+The user posting status can have three values:
+
+- active
+- warned
+- banned
+
+A banned student:
+
+- Can still browse projects.
+- Can still request projects.
+- Cannot submit new projects.
+
+
+
+10. User Management Permissions
+
+Student Permissions
+
+- Students can edit their own profiles.
+- Students can change their passwords.
+- Students can view their own requests.
+- Students can view their own downloads.
+- Students can view and manage their own submissions.
+
+Admin Permissions
+
+- Administrators can access the user list.
+- Administrators can view user roles.
+- Administrators can view user join dates.
+- Administrators can view user posting statuses.
+- Administrators can manage student posting restrictions.
+- Administrators can warn or ban students after repeated violations.
+
+
+
+11. Admin Dashboard and Insights Permissions
+
+Only administrators can access the administrative statistics and insights features.
+
+Administrators can view:
+
+- Total official projects.
+- Total community projects.
+- Community submissions grouped by status.
+- Project requests grouped by status.
+- Top courses.
+- Top contributors.
+- Contributor activity.
+
+Administrators can also moderate reviews to maintain trustworthy project ratings.
+
+
+
+12. Complete Permission Summary
+
+The following table represents the permission summary specified in Section 4.9 of the requirements document.
+
+| Action                        | Student                  | Admin               |
+|    -    -    -    -    -    - |   -   -   -   -   -   -  |   -   -   -   -   - |
+| Create official project       | No                       | Yes (auto-approved) |
+| Create community project      | Yes (needs review)       | Yes                 |
+| Edit a project                | Only their own           | Any                 |
+| Approve or reject submissions | No                       | Yes                 |
+| Request a project             | Yes (not their own)      | Not applicable      |
+| Approve or reject requests    | No (optional delegation) | Yes                 |
+| Review a project              | Only after download      | Moderate only       |
+
+
+
+13. Security and Quality Requirements
+
+The following system-level requirements must be enforced:
+
+| ID | Requirement 
+
+| Q1 | List endpoints must respond in under 500 ms. 
+| Q2 | Login attempts must be rate-limited and all inputs sanitized. 
+| Q3 | Uploads must be restricted by file type and size and checked where possible. 
+| Q4 | Download links must expire after a short time. 
+| Q5 | Role and ownership checks must be enforced in the API. 
+| Q6 | Only approved and active projects must appear in public listings. 
+| Q7 | Jest and Supertest API tests, along with one Playwright end-to-end test, must cover the complete flow: submit, review, request, approve, and download. 
+
+Mandatory Authorization Test Cases
+
+- A student must not access administrator-only endpoints.
+- A student must not edit another student's project.
+- A student must not request their own project.
+- A student must not download a project before approval.
+- A student must not review a project before downloading it.
+- A banned student must not submit projects.
+- An unauthenticated user must not access protected pages.
+- Only approved and active projects must appear in public listings.
+
+
+
+14. Implementation Priority
+
+The following access-control-related requirements are included in the Must-have scope:
+
+- Student and administrator role separation.
+- Secure authentication and token-based sessions.
+- Protected administrator endpoints.
+- Project ownership verification.
+- Approval-based community publishing.
+- Approval-based project downloads.
+- Request authorization.
+- Review eligibility validation.
+- User posting restrictions.
+- API-level role and ownership checks.
+
+The following are optional stretch features:
+
+- Delegated request approval for community project authors (A26).
+- Warning and ban system (A15 is a must-have admin story, but the ban system is identified as a feature that may be deferred if the 12-week scope becomes too large).
+
+
+
+Document Scope: Access Control, Authentication, Authorization, Ownership Restrictions, Download Permissions, Moderation, and Security Requirements.
